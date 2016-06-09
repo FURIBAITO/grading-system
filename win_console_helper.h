@@ -27,6 +27,8 @@ public:
 	// Show/hide console
 	void ShowConsoleCursor(bool showFlag);
 
+	// Posisikan cursor di koordinat
+	void SetPosition(int x, int y);
 
 	// Dapatkan handle StdOut
 	const HANDLE& GetStdOutHandle();
@@ -34,6 +36,12 @@ public:
 	// Dapatkan letak cursor di console
 	int GetCursorPosX();
 	int GetCursorPosY();
+
+	// Set ukuran console
+	void SetConsoleSize(int x, int y);
+
+	// Posisi cursor saat ingin print di posisi center 
+	unsigned char GetCenterPosition(int strSize, int consoleWidth = 80);
 
 private:
 	// Dapatkan buffer info baru

@@ -35,6 +35,11 @@ void WinConsoleHelper::ShowConsoleCursor(bool showFlag)
 	SetConsoleCursorInfo(hStdOut, &cursorInfo);
 }
 
+void WinConsoleHelper::SetPosition(int x, int y)
+{
+	SetConsoleCursorPosition(hStdOut, COORD{ (SHORT)x, (SHORT)y });
+}
+
 const HANDLE& WinConsoleHelper::GetStdOutHandle()
 {
 	return hStdOut;
@@ -51,6 +56,33 @@ int WinConsoleHelper::GetCursorPosY()
 	UpdateCSBI();
 	return csbi.dwCursorPosition.Y;
 }
+
+void WinConsoleHelper::SetConsoleSize(int x, int y)
+{
+	UpdateCSBI();
+	COORD windowSize = { csbi.srWindow.Right - csbi.srWindow.Left + 1, csbi.srWindow.Bottom - csbi.srWindow.Top + 1 };
+	if (windowSize.X > x || windowSize.Y > y)
+	{
+		SMALL_RECT info =
+		{
+			0,
+			0,
+			x < windowSize.X ? x - 1 : windowSize.X - 1,
+			y < windowSize.Y ? y - 1 : windowSize.Y - 1
+		};
+
+		SetConsoleWindowInfo(hStdOut, TRUE, &info);
+	}
+	SMALL_RECT info = { 0, 0, x - 1, y - 1 };
+	SetConsoleScreenBufferSize(hStdOut, { (SHORT)x, (SHORT)y });
+	SetConsoleWindowInfo(hStdOut, TRUE, &info);
+}
+
+unsigned char WinConsoleHelper::GetCenterPosition(int strSize, int consoleWidth)
+{
+	return (consoleWidth - strSize) / 2;
+}
+
 
 void WinConsoleHelper::UpdateCSBI()
 {

@@ -52,12 +52,12 @@ void PageView::Show()
 	}
 
 	// Print pembatas
-	wch.SetPrintColor(wch.BrightGreen, wch.None);
+	wch.SetPrintColor(wch.BrightCyan, wch.None);
 	std::cout << "-----";
-	wch.SetPrintColor(wch.None, wch.BrightGreen);
+	wch.SetPrintColor(wch.None, wch.BrightCyan);
 	std::cout << " Hal. ";
 	std::cout << currentPage + 1 << "/" << pageCount << " ";
-	wch.SetPrintColor(wch.BrightGreen, wch.None);
+	wch.SetPrintColor(wch.BrightCyan, wch.None);
 	std::cout << "-----------------------------------------------------------------";
 
 	IsActive = true;

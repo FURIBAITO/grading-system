@@ -81,12 +81,15 @@ int Navigator::GetInput()
 	else
 	{
 		// Print di bagian bawah layar console, otomatis akan dipaskan di paling bawah console (Asumsi tinggi console 25)
-		startLine = 25 - CountLines(header) - optionCount;
+		startLine = 25 - CountLines(header) - optionCount - 1;
 		SetConsoleCursorPosition(wch.GetStdOutHandle(), COORD{ 0, (SHORT)startLine });
 	}
 
 	// Print header
-	std::cout << header << std::endl;
+	wch.FillCharacter('=', wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+	wch.SetColor(wch.Green, wch.None, wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+	wch.SetPrintColor(wch.BrightGreen, wch.None);
+	std::cout << std::endl << header << std::endl;
 
 	// Print seluruh pilihan yang ada
 	int optionStart = wch.GetCursorPosY();
@@ -97,7 +100,7 @@ int Navigator::GetInput()
 	}
 
 	// Reset lineUsed used (Digunakan untuk proses clear)
-	lineUsed = (optionStart - startLine) + optionCount;
+	lineUsed = (optionStart - startLine) + optionCount + 1;
 
 	// Mulai loop untuk menunggu input user
 	// Selected adalah index (mulai dari 0) yang menjadi penunjuk ke baris yang dituju (di highlight)
@@ -249,9 +252,6 @@ int PagedNavigator::GetInput()
 	listedPerPage = 10 - fixedCount;
 	pageCount = 1 + listedCount / listedPerPage;
 
-	// Set print console warna hijau
-	wch.SetPrintColor(wch.BrightGreen, wch.None);
-
 	// Cek apakah diset untuk print pada posisi cursor, atau ditentukan
 	if (startLine >= 0)
 	{
@@ -263,18 +263,26 @@ int PagedNavigator::GetInput()
 	}
 	else
 	{
-		startLine = 25 - CountLines(header) - listedPerPage - fixedCount - 1;
+		startLine = 25 - CountLines(header) - listedPerPage - fixedCount - 2;
 		SetConsoleCursorPosition(wch.GetStdOutHandle(), COORD{ 0, (SHORT)startLine });
 	}
 
+	// Reset lineUsed used
+	lineUsed = 2 + CountLines(header) + listedPerPage + fixedCount;
+
+	// Buat tempat untuk navigator ini
+	COORD lastPos = { (SHORT)wch.GetCursorPosX(), (SHORT)wch.GetCursorPosY() };
+	wch.FillCharacter(' ', lastPos.X, lastPos.Y, lineUsed * 80);
+	SetConsoleCursorPosition(wch.GetStdOutHandle(), lastPos);
+
 	// Print header
-	std::cout << header << std::endl;
+	wch.FillCharacter('=', wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+	wch.SetColor(wch.Green, wch.None, wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+	wch.SetPrintColor(wch.BrightGreen, wch.None);
+	std::cout << std::endl << header << std::endl;
 
 	// Dapatkan letak dimana pilihan-pilihan akan diprint
 	int optionStart = wch.GetCursorPosY();
-
-	// Reset lineUsed used
-	lineUsed = (optionStart - startLine) + listedPerPage + fixedCount;
 
 	// Selected adalah index (mulai dari 0) yang menjadi penunjuk ke baris yang dituju (di highlight)
 	int selected = 0;
@@ -293,7 +301,7 @@ int PagedNavigator::GetInput()
 	// Print pembatas antara listed dengan fixed
 	std::cout << "-----";
 	wch.SetPrintColor(wch.None, wch.BrightGreen);
-	std::cout << " Page ";
+	std::cout << " Hal. ";
 	std::cout << currentPage + 1 << "/" << pageCount << " ";
 	wch.SetPrintColor(wch.BrightGreen, wch.None);
 	std::cout << "-----------------------------------------------------------------";
@@ -315,7 +323,10 @@ int PagedNavigator::GetInput()
 			ClearInterface();
 
 			// Print header
-			std::cout << header << std::endl;
+			wch.FillCharacter('=', wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+			wch.SetColor(wch.Green, wch.None, wch.GetCursorPosX(), wch.GetCursorPosY(), 80);
+			wch.SetPrintColor(wch.BrightGreen, wch.None);
+			std::cout << std::endl << header << std::endl;
 
 			// Print semua option pada halaman ini
 			for (int i = 0; i < listedPerPage; i++)
@@ -328,7 +339,7 @@ int PagedNavigator::GetInput()
 			// Print pembatas antara listed dengan fixed
 			std::cout << "-----";
 			wch.SetPrintColor(wch.None, wch.BrightGreen);
-			std::cout << " Page ";
+			std::cout << " Hal. ";
 			std::cout << currentPage + 1 << "/" << pageCount << " ";
 			wch.SetPrintColor(wch.BrightGreen, wch.None);
 			std::cout << "-----------------------------------------------------------------";

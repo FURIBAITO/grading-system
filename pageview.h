@@ -12,6 +12,7 @@ public:
 
 public:
 	PageView(std::string header = "", int startLine = STARTLINE_CURSORPOS, int itemPerPage = 10) :
+		startLine(startLine),
 		pageCount(0),
 		itemPerPage(itemPerPage),
 		header(header) {}

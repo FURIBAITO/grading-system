@@ -3,11 +3,17 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 // Definisi rasio nilai
 #define RATIO_DEFAULT_ASSIGNMENT 0.2
 #define RATIO_DEFAULT_MIDTERM 0.4
 #define RATIO_DEFAULT_FINALS 0.4
+
+// Path ke database
+#define PATH_DATABASE_STUDENT "db_student.csv"
 
 // Daftar dari seluruh range nilai dan huruf serta bobotnya dalam menghitung IPK/IPS
 struct GradeLevel
@@ -45,15 +51,15 @@ enum class GradeIndex { A, A_min, B_plus, B, B_min, C_plus, C, C_min, D_plus, D,
 typedef unsigned int	STUDENT_INDEX;
 
 // Tambah mahasiswa baru
-void AddNewStudent(std::string name);
+void AddNewStudent(std::string name, std::string id = "");
 
 // Student structure
 struct Student
 {	
 	// Konstant maksimum ukuran data
-	int MAXSIZE_ID = 8;
-	int MAXSIZE_NAME = 42;
-	int MAXSIZE_DATE = 8;
+	static const int MAXSIZE_ID = 8;
+	static const int MAXSIZE_NAME = 42;
+	static const int MAXSIZE_DATE = 8;
 
 	// string 8 digit sebagai identifikasi mahasiswa yang unik
 	std::string ID;
@@ -82,35 +88,83 @@ struct Student
 	double GetTotalScore();
 
 	// A/B/C/D/E dari mata kuliah mahasiswa ini
-	GradeIndex GetGrade();
+	int GetGrade();
 };
 
 // Vector array untuk menyimpan data siswa
 std::vector<Student> Students;
 
-void AddNewStudent(std::string name)
+void ReadStudentDB()
 {
-	char ID[] = "00000000";
-	ID[0] = '1' + 0;
-	ID[1] = '0' + 5;
+	std::ifstream studentDB(PATH_DATABASE_STUDENT);
+	if (!studentDB.good())
+	{
+		std::ofstream newDB(PATH_DATABASE_STUDENT);
+		newDB.close();
+		return;
+	}
 
-	//time_t t = time(NULL);
-	//tm* timePtr = localtime_s(&t);
+	int i = 0;
+	std::string line;
+	while (std::getline(studentDB, line))
+	{
+		std::string temp_id;
+		std::string temp_name;
+		std::string temp_asg;
+		std::string temp_mid;
+		std::string temp_fin;
 
-	//int year = timePtr->tm_year - 100;
-	int year = 16;
+		std::stringstream ss(line);
 
-	ID[2] = '0' + year / 10;
-	ID[3] = '0' + year % 10;
+		std::getline(ss, temp_id, ';');
+		std::getline(ss, temp_name, ';');
+		std::getline(ss, temp_asg, ';');
+		std::getline(ss, temp_mid, ';');
+		std::getline(ss, temp_fin, ';');
 
-	ID[4] = '0' + (Students.size() + 1) / 1000;
-	ID[5] = '0' + (Students.size() + 1) / 100;
-	ID[6] = '0' + (Students.size() + 1) / 10;
-	ID[7] = '0' + (Students.size() + 1) % 10;
-	ID[8] = '\0';
+		AddNewStudent(temp_name, temp_id);
+		Students[Students.size() - 1].SubmitScore(std::atoi(temp_asg.c_str()), std::atoi(temp_mid.c_str()), std::atoi(temp_fin.c_str()));
+	}
+}
+
+void AppendStudentDB(Student student)
+{
+	std::ofstream outfile;
+	outfile.open(PATH_DATABASE_STUDENT, std::ios::app);
+	outfile << student.ID << ';' << student.Name << ';' << std::to_string(student.Score.assignment) << ';' << std::to_string(student.Score.mid) << ';' << std::to_string(student.Score.final) << ';' << std::endl;
+}
+
+void AddNewStudent(std::string name, std::string id)
+{
 	Student newStudent;
 	newStudent.Name = name;
-	newStudent.ID = ID;
+	if (id == "")
+	{
+		char ID[] = "00000000";
+		ID[0] = '1' + 0;
+		ID[1] = '0' + 5;
+
+		//time_t t = time(NULL);
+		//tm* timePtr = localtime_s(&t);
+
+		//int year = timePtr->tm_year - 100;
+		int year = 16;
+
+		ID[2] = '0' + year / 10;
+		ID[3] = '0' + year % 10;
+
+		ID[4] = '0' + (Students.size() + 1) / 1000;
+		ID[5] = '0' + (Students.size() + 1) / 100;
+		ID[6] = '0' + (Students.size() + 1) / 10;
+		ID[7] = '0' + (Students.size() + 1) % 10;
+		ID[8] = '\0';
+
+		newStudent.ID = ID;
+	}
+	else
+	{
+		newStudent.ID = id;
+	}
 	Students.push_back(newStudent);
 }
 
@@ -131,7 +185,7 @@ double Student::GetTotalScore()
 }
 
 // Nilai huruf dari sebuah mata kuliah
-GradeIndex Student::GetGrade()
+int Student::GetGrade()
 {
 	// Cari pembulatannya dahulu
 	double raw = GetTotalScore();
@@ -142,8 +196,8 @@ GradeIndex Student::GetGrade()
 	{
 		if (rounded >= GradeLevels[i].Minimum)
 		{
-			return (GradeIndex)i;
+			return i;
 		}
 	}
-	return GradeIndex::F;
+	return (int)GradeIndex::F;
 }
